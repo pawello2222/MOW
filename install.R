@@ -1,1 +1,2 @@
-install.packages("tm")
+install.packages("RTextTools")
+install.packages("readr")
