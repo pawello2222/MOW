@@ -1,28 +1,58 @@
-library(RTextTools)
+#Sources
 source("DataLoader.R")
 
-#TODO: is base_dir necessary?
-processData <- function(base_dir)
-{
-  data <- loadData(base_dir)
-  
-  dataMatrix <- create_matrix(data["Text"], language="english", 
-                              minWordLength=3, maxWordLength=Inf, 
-                              removeNumbers=TRUE, removePunctuation=TRUE, 
-                              removeSparseTerms=0, removeStopwords=TRUE,
-                              stemWords=FALSE, stripWhitespace=TRUE, toLower=TRUE)
-  
-  container <- create_container(dataMatrix, data$Category, trainSize=1:100, virgin=FALSE)
-  model <- train_model(container, "SVM")
-  
-  predictionData <- list("electronics", "space ship blue air planet", "health")
-  predictionMatrix <- create_matrix(predictionData, originalMatrix=dataMatrix)
-  
-  predictionSize = length(predictionData)
-  predictionContainer <- create_container(predictionMatrix, labels=rep(0,predictionSize), 
-                                          testSize=1:predictionSize, virgin=FALSE)
-  
-  results <- classify_model(predictionContainer, model)
-}
+# Packages
+library(tm) # Text mining: Corpus and Document Term Matrix
+library(class) # KNN model
+library(SnowballC) # Stemming words
 
-print(processData("~/Documents/Projekty/MOW/"))
+# Read csv with two columns: text and category
+df <- loadData("~/Documents/Projekty/MOW/")
+
+# Create corpus
+docs <- Corpus(VectorSource(df$Text))
+
+# Clean corpus
+docs <- tm_map(docs, removePunctuation)
+docs <- tm_map(docs, stripWhitespace)
+docs <- tm_map(docs, removeNumbers)
+docs <- tm_map(docs, content_transformer(tolower))
+docs <- tm_map(docs, removeWords, stopwords("english"))
+docs <- tm_map(docs, stemDocument, language = "english")
+
+# Create dtm
+dtm <- DocumentTermMatrix(docs)
+print(dtm)
+
+# Transform dtm to matrix to data frame - df is easier to work with
+mat.df <- as.data.frame(data.matrix(dtm), stringsAsfactors = FALSE)
+
+# Column bind category (known classification)
+mat.df <- cbind(mat.df, df$Category)
+
+# Change name of new column to "category"
+colnames(mat.df)[ncol(mat.df)] <- "category"
+
+# Split data by rownumber into two equal portions
+train <- sample(nrow(mat.df), ceiling(nrow(mat.df) * .50))
+test <- (1:nrow(mat.df))[- train]
+
+# Isolate classifier
+cl <- mat.df[, "category"]
+
+# Create model data and remove "category"
+modeldata <- mat.df[,!colnames(mat.df) %in% "category"]
+
+# Create model: training set, test set, training set classifier
+knn.pred <- knn(modeldata[train, ], modeldata[test, ], cl[train])
+
+# Confusion matrix
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+
+# Accuracy
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+
+# Create data frame with test data and predicted category
+df.pred <- cbind(knn.pred, modeldata[test, ])
+#write.table(df.pred, file="output.csv", sep=";")
