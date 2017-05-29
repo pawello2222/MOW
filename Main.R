@@ -2,27 +2,26 @@
 source("DataLoader.R")
 
 # Packages
-library(tm) # Text mining: Corpus and Document Term Matrix
-library(class) # KNN model
-library(SnowballC) # Stemming words
+library(tm)
+library(stringr)
+library(RTextTools)
 
-# Read csv with two columns: text and category
+# Load the data from the csv file
 df <- loadData("~/Documents/Projekty/MOW/")
 
-# Create corpus
-docs <- Corpus(VectorSource(df$Text))
+corpus <- Corpus(VectorSource(df$Text))
 
-# Clean corpus
-docs <- tm_map(docs, removePunctuation)
-docs <- tm_map(docs, stripWhitespace)
-docs <- tm_map(docs, removeNumbers)
-docs <- tm_map(docs, content_transformer(tolower))
-docs <- tm_map(docs, removeWords, stopwords("english"))
-docs <- tm_map(docs, stemDocument, language = "english")
+corpus = tm_map(corpus,removeNumbers)
+corpus = tm_map(corpus,str_replace_all,pattern = "<.*?>", replacement =" ")
+corpus = tm_map(corpus,str_replace_all,pattern ="\\=", replacement =" ")
+corpus = tm_map(corpus,str_replace_all,pattern = "[[:punct:]]", replacement =" ")
+corpus = tm_map(corpus,removeWords, words= stopwords("en"))
+corpus = tm_map(corpus,tolower)
+corpus = tm_map(corpus,stripWhitespace)
+corpus = tm_map(corpus,stemDocument)
 
 # Create dtm
-dtm <- DocumentTermMatrix(docs)
-print(dtm)
+dtm <- DocumentTermMatrix(corpus)
 
 # Transform dtm to matrix to data frame - df is easier to work with
 mat.df <- as.data.frame(data.matrix(dtm), stringsAsfactors = FALSE)
@@ -34,7 +33,7 @@ mat.df <- cbind(mat.df, df$Category)
 colnames(mat.df)[ncol(mat.df)] <- "category"
 
 # Split data by rownumber into two equal portions
-train <- sample(nrow(mat.df), ceiling(nrow(mat.df) * .50))
+train <- sample(nrow(mat.df), ceiling(nrow(mat.df) * .80))
 test <- (1:nrow(mat.df))[- train]
 
 # Isolate classifier
@@ -44,7 +43,8 @@ cl <- mat.df[, "category"]
 modeldata <- mat.df[,!colnames(mat.df) %in% "category"]
 
 # Create model: training set, test set, training set classifier
-knn.pred <- knn(modeldata[train, ], modeldata[test, ], cl[train])
+knn.pred <- knn(modeldata[train, ], modeldata[test, ], cl[train], 
+                k = 1, l = 0, prob = FALSE, use.all = FALSE)
 
 # Confusion matrix
 conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
