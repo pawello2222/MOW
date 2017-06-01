@@ -1,5 +1,6 @@
 # Packages
 library(RTextTools)
+library(e1071)
 
 classify_bayes <- function(data, train_size)
 {

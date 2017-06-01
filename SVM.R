@@ -1,5 +1,6 @@
 # Packages
 library(RTextTools)
+library(e1071)
 
 classify_svm <- function(data, train_size)
 {

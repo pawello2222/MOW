@@ -2,13 +2,13 @@ library(readr)
 
 loadData <- function(base_dir, data_size)
 {
-  data_frame <- loadCategory(base_dir, "Cryptography")
-  data_frame <- rbind(data_frame,loadCategory(base_dir, "Electronics"))
-  data_frame <- rbind(data_frame,loadCategory(base_dir, "Medicine"))
-  data_frame <- rbind(data_frame,loadCategory(base_dir, "Space"))
+  data_frame <- loadCategory(base_dir, data_size, "Cryptography")
+  data_frame <- rbind(data_frame,loadCategory(base_dir, data_size, "Electronics"))
+  data_frame <- rbind(data_frame,loadCategory(base_dir, data_size, "Medicine"))
+  data_frame <- rbind(data_frame,loadCategory(base_dir, data_size, "Space"))
 }
 
-loadCategory <- function(base_dir, category_name)
+loadCategory <- function(base_dir, data_size, category_name)
 {
   current_dir <- paste(base_dir, 'Data/', category_name, "/", sep="")
   file_names=as.list(dir(path = current_dir,pattern="*", include.dirs = FALSE))
@@ -36,4 +36,3 @@ loadCategory <- function(base_dir, category_name)
   
   return(data_frame)
 }
-

@@ -1,14 +1,33 @@
-#Sources
-source("DataLoader.R")
+# Sources
+source("Helpers.R")
 source("Bayes.R")
 source("KNN.R")
 source("SVM.R")
 
-#Data
+# Data
 data <- loadData("~/Documents/Projekty/MOW/", 100)
+data_length <- length(data[,1])
+col_names <- unique(data[,2])
 
-#Classifiers
-#results <- classify_bayes(data, 390)
-#results <- classify_knn(data, 390)
-#results <- classify_svm(data, 390)
-results
+train_size <- 390
+
+# Bayes classifier
+predictions <- classify_bayes(data, train_size)
+results.bayes <- table("Predictions" = predictions,
+                       "Actual" = data[(train_size+1):data_length,2])
+print("Bayes:")
+print(results.bayes)
+
+# KNN classifier
+predictions <- classify_knn(data, train_size)
+results.knn <- table("Predictions" = predictions,
+                     "Actual" = data[(train_size+1):data_length,2])
+print("KNN:")
+print(results.knn)
+
+# SVM classifier
+predictions <- classify_svm(data, train_size)
+results.svm <- table("Predictions" = predictions[,"SVM_LABEL"],
+                  "Actual" = data[(train_size+1):data_length,2])
+print("SVM:")
+print(results.svm)
