@@ -1,5 +1,5 @@
 #Sources
-#source("DataLoader.R")
+source("DataLoader.R")
 
 # Packages
 library(RTextTools)

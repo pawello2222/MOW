@@ -14,7 +14,7 @@ loadCategory <- function(base_dir, category_name)
   file_names=as.list(dir(path = current_dir,pattern="*", include.dirs = FALSE))
   
   data_frame <- NULL
-  count <- 100 #length(file_names)
+  count <- 1000 #length(file_names)
   
   for(i in 1:count)
   {
