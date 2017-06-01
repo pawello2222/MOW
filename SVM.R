@@ -1,50 +1,24 @@
-#Sources
-source("DataLoader.R")
-
 # Packages
 library(RTextTools)
-library(e1071)
 
-library(readr)
-
-loadCategory <- function(base_dir, category_name)
+classify_svm <- function(data, train_size)
 {
-  current_dir <- paste(base_dir, 'Data/', category_name, "/", sep="")
-  file_names=as.list(dir(path = current_dir,pattern="*", include.dirs = FALSE))
+  data_length <- length(data[,1])
+  matrix <- create_matrix(data[,1], language="english", minDocFreq=3,
+                         removeStopwords=TRUE, removeNumbers=TRUE, 
+                         removePunctuation=TRUE, stripWhitespace=TRUE, 
+                         toLower=TRUE, stemWords=TRUE)
   
-  data_frame <- NULL
-  count <- 1000 #length(file_names)
+  container <- create_container(matrix, as.numeric(as.factor(data[,2])),
+                               trainSize=1:train_size, virgin=FALSE)
   
-  for(i in 1:count)
-  {
-    path <- paste(current_dir, file_names[[i]], sep="")
-    contents_of_file <- read_file(path)
-    
-    data_frame <- rbind(data_frame,c(contents_of_file, category_name))
-  }
+  model <- train_model(container,"SVM", kernel="linear", cost=1, gamma=0.5)
   
-  return(data_frame)
+  predMatrix <- create_matrix(data[(train_size+1):data_length,1], originalMatrix=matrix)
+  predSize <- length(data[(train_size+1):data_length,1])
+
+  predictionContainer <- create_container(predMatrix, labels=rep(0,predSize), 
+                                          testSize=1:predSize, virgin=FALSE)
+  
+  return(classify_model(predictionContainer, model))
 }
-
-base_dir <- "~/Documents/Projekty/MOW/"
-
-data <- loadData("~/Documents/Projekty/MOW/")
-
-matrix = create_matrix(data[,1], language="english", minDocFreq=3,
-                       removeStopwords=TRUE, removeNumbers=TRUE, 
-                       removePunctuation=TRUE, stripWhitespace=TRUE, 
-                       toLower=TRUE, stemWords=TRUE)
-
-container = create_container(matrix, as.numeric(as.factor(data[,2])),
-                             trainSize=1:3900, virgin=FALSE)
-
-model <- train_model(container,"SVM",kernel="linear",cost=1,gamma=0.5)
-
-predMatrix <- create_matrix(data[3901:4000,1], originalMatrix=matrix)
-predSize = length(data[3901:4000,1])
-print(predSize)
-predictionContainer <- create_container(predMatrix, labels=rep(0,predSize), 
-                                        testSize=1:predSize, virgin=FALSE)
-results <- classify_model(predictionContainer, model)
-results
-

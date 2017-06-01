@@ -1,6 +1,6 @@
 library(readr)
 
-loadData <- function(base_dir)
+loadData <- function(base_dir, data_size)
 {
   data_frame <- loadCategory(base_dir, "Cryptography")
   data_frame <- rbind(data_frame,loadCategory(base_dir, "Electronics"))
@@ -14,7 +14,7 @@ loadCategory <- function(base_dir, category_name)
   file_names=as.list(dir(path = current_dir,pattern="*", include.dirs = FALSE))
   
   data_frame <- NULL
-  count <- 1000 #length(file_names)
+  count <- data_size #length(file_names)
   
   for(i in 1:count)
   {
