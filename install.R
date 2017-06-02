@@ -1,4 +1,4 @@
 install.packages("RTextTools")
 install.packages("readr")
-install.packages("SnowballC")
-install.packages("slam")
+install.packages("stringr")
+install.packages("class")

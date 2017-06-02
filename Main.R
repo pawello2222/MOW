@@ -1,15 +1,25 @@
-# Sources
+### Config
+# Run installation script
+#source(Install.R)
+# Fix errors: in line 42 change 'Acronym' to 'acronym' and save
+#trace("create_matrix", edit=T)
+
+### Sources
 source("Helpers.R")
 source("Bayes.R")
 source("KNN.R")
 source("SVM.R")
 
-# Data
-data <- loadData("~/Documents/Projekty/MOW/", 100)
+### Data
+# Category size should be in range <0...1000>
+category_size <- 100
+# Training set size should be in range <0...4*category_size>
+train_size <- 390
+
+# Loading data
+data <- loadData("~/Documents/Projekty/MOW/", category_size)
 data_length <- length(data[,1])
 col_names <- unique(data[,2])
-
-train_size <- 390
 
 # Bayes classifier
 predictions <- classify_bayes(data, train_size)

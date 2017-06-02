@@ -1,10 +1,10 @@
-# Packages
+### Packages
 library(tm)
 library(class)
 library(stringr)
 library(RTextTools)
 
-# KNN classifier
+### KNN classifier
 classify_knn <- function(data, train_size)
 {
   data_length <- length(data[,1])
@@ -22,21 +22,25 @@ classify_knn <- function(data, train_size)
   corpus <- tm_map(corpus, stripWhitespace)
   corpus <- tm_map(corpus, stemDocument)
   
-  # Create dtm
+  # Create DTM
   dtm <- DocumentTermMatrix(corpus)
   
-  # Transform dtm to matrix to data frame
+  # Transform DTM to matrix to data frame
   mat.df <- as.data.frame(data.matrix(dtm), stringsAsfactors=FALSE)
   
+  # Create training set
   mat.train <- mat.df[1:train_size,]
+  
+  # Create test set
   mat.test <- mat.df[(train_size+1):data_length,]
   
+  # Create training set classifier
   data.train.cl <- data[1:train_size,2]
-  data.test.cl <- data[(train_size+1):data_length,2]
   
-  # Create model: training set, test set, training set classifier
-  knn.pred <- knn(mat.train, mat.test, data.train.cl, 
-                  k=1, l=0, prob=FALSE, use.all=FALSE)
+  # Train model and classify test set
+  predictions <- knn(mat.train, mat.test, data.train.cl, 
+                     k=1, l=0, prob=FALSE, use.all=FALSE)
   
-  return(knn.pred)
+  # Return predictions
+  return(predictions)
 }
